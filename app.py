@@ -1,27 +1,26 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, render_template
 import cv2
 import torch
 import torchvision.transforms as T
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 from torch import nn
 from torchvision import models
 from waitress import serve
-from flask import Flask, send_file, render_template
-
-app = Flask(__name__)
 from multiprocessing import cpu_count
+import os
 
-# Obtenir le nombre de cœurs CPU disponibles
+app = Flask(_name_)
+
+# Nombre de cœurs CPU
 workers = cpu_count()
 
-# Charger le modèle une seule fois
+# Charger le modèle VGG19 une fois
 from torchvision.models import vgg19, VGG19_Weights
-
 weights = VGG19_Weights.DEFAULT
 model = vgg19(weights=weights).features.eval()
 
+# Transformation de l'image
 def transform_image(image):
     transform = T.Compose([
         T.Resize((256, 256)),
@@ -30,12 +29,14 @@ def transform_image(image):
     ])
     return transform(image).unsqueeze(0)
 
+# Appliquer le style
 def apply_style(model, image):
     with torch.no_grad():
         transformed_image = transform_image(image)
         styled_image = model(transformed_image)
         return styled_image
 
+# Traiter une vidéo
 def process_video(input_video, output_video, model):
     cap = cv2.VideoCapture(input_video)
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -45,7 +46,6 @@ def process_video(input_video, output_video, model):
         ret, frame = cap.read()
         if not ret:
             break
-
         pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         styled_frame = apply_style(model, pil_image)
         styled_frame = styled_frame.squeeze(0).permute(1, 2, 0).cpu().numpy()
@@ -57,9 +57,11 @@ def process_video(input_video, output_video, model):
     cap.release()
     out.release()
 
+# Routes Flask
 @app.route('/')
 def index():
     return render_template("index.html")
+
 @app.route('/video')
 def serve_video():
     input_video = "input_video.mp4"
@@ -67,11 +69,7 @@ def serve_video():
     process_video(input_video, output_video, model)
     return send_file(output_video, mimetype='video/avi')
 
-if __name__ == "__main__":
-    from waitress import serve
-    import os
-    print("serveur en cours de demarrage...")
-    port = int(os.environ.get("port", 5000))
-    serve(app, host='0.0.0.0', port=port, threads=4 ,channel_timeout=60, )
-    
-     # Utilise soit Waitress, soit app.run()
+# Lancer le serveur avec Waitress
+if _name_ == "_main_":
+    print("Serveur en cours de démarrage...")
+    serve(app, host='0.0.0.0', port=5000, threads=4, channel_timeout=60, _quiet=True)
