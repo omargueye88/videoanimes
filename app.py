@@ -58,7 +58,7 @@ def process_video(input_video, output_video, model):
     out.release()
 
 # Routes Flask
-@app.route('./app.py')
+@app.route('app.py')
 def index():
     return render_template("index.html")
 
