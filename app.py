@@ -15,6 +15,7 @@ app = Flask(__name__)
 # Nombre de cœurs CPU
 workers = cpu_count()
 
+
 # Charger le modèle VGG19 une fois
 from torchvision.models import vgg19, VGG19_Weights
 weights = VGG19_Weights.DEFAULT
@@ -58,7 +59,7 @@ def process_video(input_video, output_video, model):
     out.release()
 
 # Routes Flask
-@app.route('/app.py')
+@app.route('/')
 def index():
     return render_template("index.html")
 
@@ -70,6 +71,10 @@ def serve_video():
     return send_file(output_video, mimetype='video/avi')
 
 # Lancer le serveur avec Waitress
-if __name__ == "_main_":
+if __name__ == "__main__":
     print("Serveur en cours de démarrage...")
-    serve(app, host='0.0.0.0', port=5000, threads=4, channel_timeout=60, _quiet=True)
+    from waitress import serve
+    import os
+    from multiprocessing import cpu_count
+
+    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), threads=4, channel_timeout=60, _quiet=True, url_scheme="http",) 
