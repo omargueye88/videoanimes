@@ -1,0 +1,9 @@
+services:
+    - type: web
+      name: videoanimes
+      
+      buildCommand: pip install-r requirements.txt
+      startCommand:  python app.py
+      runtime: python
+      autoDeploy: true
+      plan: free

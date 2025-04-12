@@ -10,7 +10,7 @@ from waitress import serve
 from multiprocessing import cpu_count
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 # Nombre de cœurs CPU
 workers = cpu_count()
@@ -70,6 +70,6 @@ def serve_video():
     return send_file(output_video, mimetype='video/avi')
 
 # Lancer le serveur avec Waitress
-if _name_ == "_main_":
+if __name__ == "_main_":
     print("Serveur en cours de démarrage...")
     serve(app, host='0.0.0.0', port=5000, threads=4, channel_timeout=60, _quiet=True)
